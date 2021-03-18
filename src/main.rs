@@ -166,20 +166,18 @@ fn rasterize(mut px: &mut Pixmap, draw_data: &imgui::DrawData, font_pixmap: Pixm
                                         v2.pos,
                                         None,
                                     );
-                                }
-                            }
 
-                            // Debug: show poly outline
-                            if false {
-                                if let DrawPass::Fill = draw_pass {
-                                    paint.set_color_rgba8(255, 255, 0, 128);
-                                    px.stroke_path(
-                                        &path,
-                                        &paint,
-                                        &tiny_skia::Stroke::default(),
-                                        Transform::default(),
-                                        None,
-                                    );
+                                    // Debug: show poly outline
+                                    if false {
+                                        paint.set_color_rgba8(255, 255, 0, 128);
+                                        px.stroke_path(
+                                            &path,
+                                            &paint,
+                                            &tiny_skia::Stroke::default(),
+                                            Transform::default(),
+                                            None,
+                                        );
+                                    }
                                 }
                             }
                         }
@@ -243,13 +241,17 @@ fn render_textured_tri(
 
     let mut paint = Paint::default();
     paint.shader = tex;
+    // paint.set_color_rgba8(120, 0, 23, 120);
 
-    let mut path = PathBuilder::new();
-    path.move_to(dest_p0[0], dest_p0[1]);
-    path.line_to(dest_p1[0], dest_p1[1]);
-    path.line_to(dest_p2[0], dest_p2[1]);
-    path.close();
-    let path = path.finish().unwrap();
+
+    let path = {
+        let mut path = PathBuilder::new();
+        path.move_to(dest_p0[0], dest_p0[1]);
+        path.line_to(dest_p1[0], dest_p1[1]);
+        path.line_to(dest_p2[0], dest_p2[1]);
+        path.close();
+        path.finish().unwrap()
+    };
 
     output.fill_path(
         &path,
@@ -334,17 +336,21 @@ fn main() {
                 .build();
 
             ui.get_window_draw_list()
-                .add_text([200.0, 200.0], [0.0, 1.0, 0.0, 1.0], "i");
+                .add_text([200.0, 200.0], [0.0, 0.5, 1.0, 1.0], "z");
+            ui.get_window_draw_list()
+                .add_text([200.0, 250.0], [0.0, 1.0, 0.0, 1.0], "a");
+            ui.get_window_draw_list()
+                .add_text([200.0, 300.0], [0.0, 1.0, 0.0, 1.0], "z");
 
-            imgui::Window::new(im_str!("Test"))
-                .size([200.0, 100.0], imgui::Condition::FirstUseEver)
-                .position([10.0, 200.0], imgui::Condition::FirstUseEver)
-                .build(&ui, || {
-                    ui.button(imgui::im_str!("Hi"), [0.0, 0.0]);
-                    ui.text("Ok");
-                    let mut thing = 0.4;
-                    ui.input_float(im_str!("##Test"), &mut thing).build();
-                });
+            // imgui::Window::new(im_str!("Test"))
+            //     .size([200.0, 100.0], imgui::Condition::FirstUseEver)
+            //     .position([10.0, 200.0], imgui::Condition::FirstUseEver)
+            //     .build(&ui, || {
+            //         ui.button(imgui::im_str!("Hi"), [0.0, 0.0]);
+            //         ui.text("Ok");
+            //         let mut thing = 0.4;
+            //         ui.input_float(im_str!("##Test"), &mut thing).build();
+            //     });
 
             ui.show_demo_window(&mut true);
             ui.show_metrics_window(&mut true);
