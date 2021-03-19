@@ -253,10 +253,11 @@ fn render_textured_tri(
         && uv_p1[0] == uv_p2[0]
         && uv_p0[1] == uv_p1[1]
         && uv_p1[1] == uv_p2[1];
-    // FIXME: Better check
+    // TODO: Better check
 
     if is_solid {
         let mut base_paint = Paint::default();
+        // TODO: Gradient between col_p0/1/2, currently using first colour for entire surface which is wrong
         base_paint.set_color_rgba8(col_p0[0], col_p0[1], col_p0[2], col_p0[3]);
 
         output.fill_path(
@@ -354,24 +355,17 @@ fn main() {
         let draw_data: &imgui::DrawData = {
             let ui = imgui_ctx.frame();
 
-            ui.get_window_draw_list()
-                .add_rect([10.0, 10.0], [50.0, 50.0], [0.5, 0.0, 1.0])
-                .filled(true)
-                .rounding(6.0)
-                .build();
-
-            ui.get_window_draw_list()
-                .add_text([200.0, 200.0], [0.0, 0.5, 1.0, 1.0], "z");
-            ui.get_window_draw_list()
-                .add_text([200.0, 250.0], [0.0, 1.0, 0.0, 1.0], "a");
-            ui.get_window_draw_list()
-                .add_text([200.0, 300.0], [0.0, 1.0, 0.0, 1.0], "z");
-
             imgui::Window::new(im_str!("Abc"))
                 .position([30.0, 10.0], imgui::Condition::Always)
                 .size([120.0, 100.0], imgui::Condition::Always)
                 .build(&ui, || {
                     ui.text("a");
+
+                    ui.get_window_draw_list()
+                        .add_rect([10.0, 10.0], [50.0, 50.0], [0.5, 0.0, 1.0])
+                        .filled(true)
+                        .rounding(6.0)
+                        .build();
                 });
 
             imgui::Window::new(im_str!("Test"))
