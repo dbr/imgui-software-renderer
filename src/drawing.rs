@@ -4,7 +4,6 @@ use imgui::internal::RawWrapper;
 use imgui::{im_str, FontConfig, FontSource};
 use imgui::{DrawCmd, DrawCmdParams};
 
-
 /// Transform which takes three corners of a 0..1 cube and maps them
 /// to the specified coordinates.
 fn cornerpin(ul: (f32, f32), ur: (f32, f32), ll: (f32, f32)) -> Transform {
@@ -40,32 +39,10 @@ fn render_textured_tri(
     col_p1: [u8; 4],
     col_p2: [u8; 4],
 ) {
-
     /// Convert between imgui-rs and tiny_skia point encodings
     fn p(x: [f32; 2]) -> (f32, f32) {
         (x[0], x[1])
     }
-
-    // Calculate the transform for the texture lookups.
-    // 1. Transform from image coordinates into 0..1 space
-    let xform_image_to_norm = Transform::from_scale(
-        1.0 / texture_px.width() as f32,
-        1.0 / texture_px.height() as f32,
-    );
-    let xform = xform_image_to_norm
-        // 2. Then use the UV coordinates
-        .post_concat(crate::copypaste::invert(&cornerpin(p(uv_p0), p(uv_p1), p(uv_p2))).unwrap())
-        // 3. and destination coordinates
-        .post_concat(cornerpin(p(dest_p0), p(dest_p1), p(dest_p2)));
-
-    // `Pattern` is tiny_skia's name for image shader
-    let tex = tiny_skia::Pattern::new(
-        texture_px,
-        tiny_skia::SpreadMode::Pad,
-        tiny_skia::FilterQuality::Bilinear,
-        col_p0[3] as f32 / 255.0,
-        xform,
-    );
 
     // Path for the triangle
     let path = {
@@ -80,10 +57,10 @@ fn render_textured_tri(
     // Check if the tri is a single colour (e.g window background
     // area), or requires a texture lookup (e.g text or icon)
     let is_solid = true
-        && uv_p0[0] == uv_p1[0]
-        && uv_p1[0] == uv_p2[0]
-        && uv_p0[1] == uv_p1[1]
-        && uv_p1[1] == uv_p2[1];
+        && (uv_p0[0] - uv_p1[0]).abs() < 1e-8
+        && (uv_p1[0] - uv_p2[0]).abs() < 1e-8
+        && (uv_p0[1] - uv_p1[1]).abs() < 1e-8
+        && (uv_p1[1] - uv_p2[1]).abs() < 1e-8;
     // TODO: Better check
 
     if is_solid {
@@ -102,6 +79,38 @@ fn render_textured_tri(
         );
     } else {
         // Draw a textured triangle
+
+        // Calculate the transform for the texture lookups.
+        // 1. Transform from image coordinates into 0..1 space
+        let xform_image_to_norm = Transform::from_scale(
+            1.0 / texture_px.width() as f32,
+            1.0 / texture_px.height() as f32,
+        );
+
+        // 2. Then use the UV coordinates
+        let xform_norm_to_uv =
+            match crate::copypaste::invert(&cornerpin(p(uv_p0), p(uv_p1), p(uv_p2))) {
+                // FIXME: Why are some of these transforms non-invertible?
+                None => return,
+                Some(x) => x,
+            };
+
+        let xform_uv_to_dest = cornerpin(p(dest_p0), p(dest_p1), p(dest_p2));
+
+        let xform = xform_image_to_norm
+            .post_concat(xform_norm_to_uv)
+            // 3. and destination coordinates
+            .post_concat(xform_uv_to_dest);
+
+        // `Pattern` is tiny_skia's name for image shader
+        let tex = tiny_skia::Pattern::new(
+            texture_px,
+            tiny_skia::SpreadMode::Pad,
+            tiny_skia::FilterQuality::Bilinear,
+            col_p0[3] as f32 / 255.0,
+            xform,
+        );
+
         let mut paint = Paint::default();
         paint.shader = tex;
 
@@ -114,7 +123,6 @@ fn render_textured_tri(
         );
     }
 }
-
 
 pub(crate) fn rasterize(mut px: &mut Pixmap, draw_data: &imgui::DrawData, font_pixmap: PixmapRef) {
     let mut counter = 0;

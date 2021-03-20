@@ -85,5 +85,4 @@ mod copypaste {
     }
 }
 
-
 pub(crate) use copypaste::invert;

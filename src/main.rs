@@ -6,9 +6,6 @@ use imgui::internal::RawWrapper;
 use imgui::{im_str, FontConfig, FontSource};
 use imgui::{DrawCmd, DrawCmdParams};
 
-
-
-
 // fn test_texture() {
 //     let texture_px = Pixmap::load_png("uvtest.png").unwrap();
 //     let mut px = Pixmap::new(512, 512).unwrap();
@@ -64,9 +61,6 @@ fn main() {
             }
         }
 
-        for (i, mut pixel) in font_pixmap.pixels_mut().iter().enumerate() {
-            pixel = &tiny_skia::PremultipliedColorU8::from_rgba(100, 20, 5, 255).unwrap();
-        }
         font_pixmap
     };
 
