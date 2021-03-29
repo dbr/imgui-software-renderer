@@ -1,11 +1,9 @@
 mod copypaste;
 pub mod drawing;
 
-use tiny_skia::{Paint, PathBuilder, Pixmap, PixmapRef, Transform};
+use tiny_skia::{Pixmap, PixmapRef};
 
-use imgui::internal::RawWrapper;
-use imgui::{im_str, FontConfig, FontSource};
-use imgui::{DrawCmd, DrawCmdParams};
+use imgui::{FontConfig, FontSource};
 
 pub struct Renderer {}
 
@@ -29,8 +27,13 @@ impl TestHelper {
     pub fn setup(size: [f32; 2]) -> Self {
         let mut imgui_ctx = imgui::Context::create();
 
+        // Disable settings save/restore
+        imgui_ctx.set_ini_filename(None);
+
+        // Set display size
         imgui_ctx.io_mut().display_size = size;
 
+        // Register font
         imgui_ctx.fonts().add_font(&[FontSource::DefaultFontData {
             config: Some(FontConfig {
                 size_pixels: 13.0,
@@ -38,6 +41,7 @@ impl TestHelper {
             }),
         }]);
 
+        // Create pixmap for font atlas
         let font_pixmap = {
             let mut font_atlas = imgui_ctx.fonts();
             let font_atlas_tex = font_atlas.build_rgba32_texture();

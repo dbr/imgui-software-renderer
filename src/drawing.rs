@@ -1,7 +1,6 @@
 use tiny_skia::{Paint, PathBuilder, Pixmap, PixmapRef, Transform};
 
 use imgui::internal::RawWrapper;
-use imgui::{im_str, FontConfig, FontSource};
 use imgui::{DrawCmd, DrawCmdParams};
 
 /// Transform which takes three corners of a 0..1 cube and maps them
@@ -138,13 +137,13 @@ pub(crate) fn rasterize(mut px: &mut Pixmap, draw_data: &imgui::DrawData, font_p
 
             match cmd {
                 DrawCmd::Elements {
-                    count: count,
+                    count: _count,
                     cmd_params:
                         DrawCmdParams {
-                            clip_rect: clip_rect,
+                            clip_rect: _clip_rect,
                             texture_id: _texture_id,
-                            vtx_offset: vtx_offset,
-                            idx_offset: idx_offset,
+                            vtx_offset,
+                            idx_offset,
                             ..
                         },
                 } => {
