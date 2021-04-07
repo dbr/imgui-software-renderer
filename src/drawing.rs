@@ -94,11 +94,12 @@ fn render_textured_tri(
                 Some(x) => x,
             };
 
+        // 3. and destination coordinates
         let xform_uv_to_dest = cornerpin(p(dest_p0), p(dest_p1), p(dest_p2));
 
+        // Combine the transforms into one
         let xform = xform_image_to_norm
             .post_concat(xform_norm_to_uv)
-            // 3. and destination coordinates
             .post_concat(xform_uv_to_dest);
 
         // `Pattern` is tiny_skia's name for image shader
@@ -110,9 +111,11 @@ fn render_textured_tri(
             xform,
         );
 
+        // Create painter
         let mut paint = Paint::default();
         paint.shader = tex;
 
+        // Paint the tri
         output.fill_path(
             &path,
             &paint,
@@ -149,25 +152,10 @@ pub(crate) fn rasterize(mut px: &mut Pixmap, draw_data: &imgui::DrawData, font_p
                 } => {
                     assert!(vtx_offset == 0);
 
-                    // dbg!(count);
-                    // dbg!(clip_rect);
-                    // dbg!(texture_id);
-                    // dbg!(idx_buffer);
-                    // dbg!(_texture_id);
-                    // dbg!(idx_buffer.chunks(3).len());
-
                     for x in idx_buffer[idx_offset..].chunks(3) {
                         let v0 = verts[x[0] as usize];
                         let v1 = verts[x[1] as usize];
                         let v2 = verts[x[2] as usize];
-
-                        if false {
-                            println!("{}", counter);
-                            println!("v0: pos: x: {:4.2} y: {:4.2}.   uv : x: {:4.5} y: {:4.5}.   col: r: {:3.0} g: {:3.0} b: {:3.0} a: {:3.0}", v0.pos[0], v0.pos[1], v0.uv[0], v0.uv[1], v0.col[0], v0.col[1], v0.col[2], v0.col[3]);
-                            println!("v0: pos: x: {:4.2} y: {:4.2}.   uv : x: {:4.5} y: {:4.5}.   col: r: {:3.0} g: {:3.0} b: {:3.0} a: {:3.0}", v1.pos[0], v1.pos[1], v1.uv[0], v1.uv[1], v1.col[0], v1.col[1], v1.col[2], v1.col[3]);
-                            println!("v0: pos: x: {:4.2} y: {:4.2}.   uv : x: {:4.5} y: {:4.5}.   col: r: {:3.0} g: {:3.0} b: {:3.0} a: {:3.0}", v2.pos[0], v2.pos[1], v2.uv[0], v2.uv[1], v2.col[0], v2.col[1], v2.col[2], v2.col[3]);
-                            println!("");
-                        }
 
                         let path = {
                             let mut pb = tiny_skia::PathBuilder::new();
